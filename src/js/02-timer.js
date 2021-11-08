@@ -5,6 +5,7 @@ import 'notiflix/dist/notiflix-3.1.0.min.css';
 const todayDate = Date.now();
 let selectData = null;
 let intervalId = null;
+let workTimer = false;
 Notify.init({
   width: '280px',
   position: 'right-top',
@@ -26,13 +27,11 @@ flatpickr('#datetime-picker', {
   time_24hr: true,
   defaultDate: new Date(),
   minuteIncrement: 1,
-  onOpen() {
-    if (!refs.startBtn.hasAttribute('disabled')) {
-      refs.startBtn.setAttribute('disabled', true);
-    }
-  },
   onClose(selectedDates) {
-    if (selectedDates[0].getTime() < todayDate) {
+    if (refs.startBtn.hasAttribute('disabled') && workTimer === true) {
+      return;
+    } else if (selectedDates[0].getTime() < todayDate) {
+      refs.startBtn.setAttribute('disabled', true);
       Notify.failure('Please choose a date in the future');
     } else {
       refs.startBtn.removeAttribute('disabled');
@@ -74,9 +73,10 @@ function timerMarcup({ days, hours, minutes, seconds }) {
   refs.seconds.textContent = addLeadingZero(seconds);
 }
 function timer(selectTime) {
+  workTimer = true;
   intervalId = setInterval(() => {
     if (selectTime < 1000) {
-      refs.startBtn.removeAttribute('disabled');
+      workTimer = false;
       return clearInterval(intervalId);
     }
     selectTime -= 1000;
